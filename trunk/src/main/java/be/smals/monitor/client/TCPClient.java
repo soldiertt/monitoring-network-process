@@ -10,12 +10,20 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
+ * My Client
+ *
  * Created by soldiertt on 19-06-14.
  */
 public class TCPClient {
 
     public static void main(String argv[]) throws Exception  {
 
+        final String server;
+        if (argv.length != 1) {
+            throw new IllegalArgumentException("Must be one argument with server name !");
+        } else {
+            server = argv[0];
+        }
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
@@ -32,7 +40,7 @@ public class TCPClient {
                 }
 
                 try {
-                    clientSocket = new Socket("localhost", 6789);
+                    clientSocket = new Socket(server, 6789);
                     ObjectOutputStream outToServer = new ObjectOutputStream(clientSocket.getOutputStream());
                     final Process process = Runtime.getRuntime().exec(dosCommand);
                     final InputStream in = process.getInputStream();
