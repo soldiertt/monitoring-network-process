@@ -6,13 +6,7 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" readonly="true" id="b923c4cf-e850-442d-a5c1-134b3c9aaa0c" name="Default" comment="update 28/06">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/META-INF" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/META-INF/MANIFEST.MF" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/be/smals/monitor/client/TCPClient.java" afterPath="$PROJECT_DIR$/src/main/java/be/smals/monitor/client/TCPClient.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/be/smals/monitor/server/TCPServer.java" afterPath="$PROJECT_DIR$/src/main/java/be/smals/monitor/server/TCPServer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/servermonitoring.iml" afterPath="$PROJECT_DIR$/servermonitoring.iml" />
+    <list default="true" readonly="true" id="b923c4cf-e850-442d-a5c1-134b3c9aaa0c" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Server Monitoring.iws" />
