@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="monito-srv">
+    <output-path>$PROJECT_DIR$/out/artifacts/monito_srv</output-path>
+    <root id="archive" name="monito-srv.jar">
+      <element id="module-output" name="servermonitoring" />
+      <element id="dir-copy" path="$PROJECT_DIR$/src/main" />
+    </root>
+  </artifact>
+</component>
