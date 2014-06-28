@@ -1,6 +1,8 @@
 package be.smals.monitor.server;
 
 import be.smals.monitor.model.ProcessMonitor;
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
 
 import javax.swing.*;
 import java.io.*;
@@ -18,7 +20,16 @@ public class TCPServer {
     private static ImageIcon imgRed = new ImageIcon(TCPServer.class.getResource("red.png"));
 
     public static void main(String argv[]) throws Exception {
-        final String[] clients = {"pc-win8", "pc-win7"};
+
+        File jarFile = new File(TCPServer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        String propertiesPath = jarFile.getParentFile().getAbsolutePath();
+        Properties mainProperties = new Properties();
+        FileInputStream propsFile;
+        propsFile = new FileInputStream(propertiesPath + "/server.properties");
+        mainProperties.load(propsFile);
+        propsFile.close();
+        String clientsStr = mainProperties.getProperty("clients");
+        final String[] clients = clientsStr.split(",");
         final Map<String, Calendar> schedules = new HashMap<String, Calendar>();
         ServerSocket welcomeSocket = new ServerSocket(6789);
         final MonFrame f = new MonFrame(clients);
@@ -44,16 +55,24 @@ public class TCPServer {
         while (true) {
             Socket connectionSocket = welcomeSocket.accept();
             ObjectInputStream inFromClient = new ObjectInputStream(connectionSocket.getInputStream());
-            DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
             ProcessMonitor processMonitor = (ProcessMonitor) inFromClient.readObject();
+            System.out.println("client hostname = " + processMonitor.getHostname());
             int index = Arrays.asList(clients).indexOf(processMonitor.getHostname());
             schedules.put(processMonitor.getHostname(), Calendar.getInstance());
+            System.out.println("Index :" + index);
             if (processMonitor.isRunning()) {
                 System.out.println("BULLET VERTE pour " + processMonitor.getHostname());
                 f.getLabels()[index][2].setIcon(imgGreen);
             } else {
                 System.out.println("BULLET ROUGE pour " + processMonitor.getHostname());
                 f.getLabels()[index][2].setIcon(imgRed);
+                try {
+                    InputStream in = new FileInputStream(new File(TCPServer.class.getResource("alarm.au").getPath()));
+                    AudioStream audioStream = new AudioStream(in);
+                    AudioPlayer.player.start(audioStream);
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
