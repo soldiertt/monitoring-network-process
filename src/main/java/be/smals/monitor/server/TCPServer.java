@@ -16,12 +16,16 @@ import java.util.Timer;
  */
 public class TCPServer {
 
-    private static ImageIcon imgGreen = new ImageIcon(TCPServer.class.getResource("green.png"));
-    private static ImageIcon imgRed = new ImageIcon(TCPServer.class.getResource("red.png"));
+    public static ImageIcon imgGreen = new ImageIcon(TCPServer.class.getResource("green.png"));
+    public static ImageIcon imgRed = new ImageIcon(TCPServer.class.getResource("red.png"));
+
+    public TCPServer() {
+        //Empty constructor
+    }
 
     public static void main(String argv[]) throws Exception {
-
-        File jarFile = new File(TCPServer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        final TCPServer tcpServer = new TCPServer();
+        File jarFile = new File(tcpServer.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
         String propertiesPath = jarFile.getParentFile().getAbsolutePath();
         Properties mainProperties = new Properties();
         FileInputStream propsFile;
@@ -30,22 +34,24 @@ public class TCPServer {
         propsFile.close();
         String clientsStr = mainProperties.getProperty("clients");
         final String[] clients = clientsStr.split(",");
-        final Map<String, Calendar> schedules = new HashMap<String, Calendar>();
+        final Map<String, Calendar> lastIncomingRequests = new HashMap<String, Calendar>();
         ServerSocket welcomeSocket = new ServerSocket(6789);
-        final MonFrame f = new MonFrame(clients);
-        f.setVisible(true);
+        final MonFrame guiFrame = new MonFrame(clients);
+        guiFrame.setVisible(true);
         Timer timer = new Timer();
+
+        //Check connected agents
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
                 Calendar ago = Calendar.getInstance();
                 ago.add(Calendar.SECOND, -30);
-                for (Map.Entry<String, Calendar> entry : schedules.entrySet()) {
-                    int index = Arrays.asList(clients).indexOf(entry.getKey());
-                    if (entry.getValue().getTime().compareTo(ago.getTime()) < 0 ) {
-                        f.getLabels()[index][1].setIcon(imgRed);
+                for (Map.Entry<String, Calendar> entry : lastIncomingRequests.entrySet()) {
+                    int index = tcpServer.findHostIndex(clients, entry.getKey());
+                    if (entry.getValue().getTime().compareTo(ago.getTime()) < 0) {
+                        guiFrame.getIcons()[index][0].setIcon(imgRed);
                     } else {
-                        f.getLabels()[index][1].setIcon(imgGreen);
+                        guiFrame.getIcons()[index][0].setIcon(imgGreen);
                     }
                 }
             }
@@ -57,24 +63,35 @@ public class TCPServer {
             ObjectInputStream inFromClient = new ObjectInputStream(connectionSocket.getInputStream());
             ProcessMonitor processMonitor = (ProcessMonitor) inFromClient.readObject();
             System.out.println("client hostname = " + processMonitor.getHostname());
-            int index = Arrays.asList(clients).indexOf(processMonitor.getHostname());
-            schedules.put(processMonitor.getHostname(), Calendar.getInstance());
-            System.out.println("Index :" + index);
-            if (processMonitor.isRunning()) {
-                System.out.println("BULLET VERTE pour " + processMonitor.getHostname());
-                f.getLabels()[index][2].setIcon(imgGreen);
-            } else {
-                System.out.println("BULLET ROUGE pour " + processMonitor.getHostname());
-                f.getLabels()[index][2].setIcon(imgRed);
-                try {
-                    InputStream in = new FileInputStream(new File(TCPServer.class.getResource("alarm.au").getPath()));
-                    AudioStream audioStream = new AudioStream(in);
-                    AudioPlayer.player.start(audioStream);
-                } catch(Exception ex) {
-                    ex.printStackTrace();
+            int index = tcpServer.findHostIndex(clients, processMonitor.getHostname());
+            if (index != -1) {
+                lastIncomingRequests.put(processMonitor.getHostname(), Calendar.getInstance());
+                if (processMonitor.isRunning()) {
+                    System.out.println("GREEN for " + processMonitor.getHostname());
+                    guiFrame.getIcons()[index][1].setIcon(imgGreen);
+                } else {
+                    System.out.println("RED for " + processMonitor.getHostname());
+                    guiFrame.getIcons()[index][1].setIcon(imgRed);
+                    try {
+                        InputStream in = new FileInputStream(new File(TCPServer.class.getResource("alarm.au").getPath()));
+                        AudioStream audioStream = new AudioStream(in);
+                        AudioPlayer.player.start(audioStream);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
+            } else {
+                System.out.println("Connected client host '" +  processMonitor.getHostname() + "' is not registered in server.");
             }
         }
     }
 
+    private int findHostIndex(String[] clients, String hostname) {
+        for (int i = 0; i < clients.length; i++) {
+            if (clients[i].toLowerCase().contains(hostname.toLowerCase())) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }
